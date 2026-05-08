@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { WfHeader } from "@/components/wireframe/WfHeader";
 import { Spark } from "@/components/wireframe/Spark";
 import { THEMES, walk, type Verdict } from "@/lib/data/themes";
 
@@ -9,10 +8,7 @@ function verdictClass(v: Verdict) {
 
 export default function ThemesListPage() {
   return (
-    <div style={{ background: "var(--bg)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <WfHeader active="themes" />
-
-      <div style={{ padding: "18px 24px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
+    <div style={{ padding: "18px 24px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
           <div>
             <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: "-0.01em" }}>
@@ -140,6 +136,5 @@ export default function ThemesListPage() {
           </table>
         </div>
       </div>
-    </div>
   );
 }

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { WfHeader } from "@/components/wireframe/WfHeader";
 import { Spark } from "@/components/wireframe/Spark";
 import { THEMES, BRIEF_UPDATES, HOLDINGS, walk, type Verdict } from "@/lib/data/themes";
 
@@ -32,16 +31,13 @@ export default function DashboardPage() {
   const portfolioSpark = walk(3, 60, 0.004, 0.03);
 
   return (
-    <div style={{ background: "var(--bg)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <WfHeader active="dashboard" dense />
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 320px",
-          flex: 1,
-        }}
-      >
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 320px",
+        flex: 1,
+      }}
+    >
         {/* ── Main column ── */}
         <div
           style={{
@@ -378,6 +374,5 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </div>
   );
 }

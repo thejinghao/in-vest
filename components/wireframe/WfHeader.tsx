@@ -1,11 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 type ActiveTab = "dashboard" | "themes" | "portfolio" | "brief";
-
-interface WfHeaderProps {
-  active?: ActiveTab;
-  dense?: boolean;
-}
 
 const TABS: Array<{ id: ActiveTab; label: string; href: string }> = [
   { id: "dashboard", label: "Dashboard", href: "/" },
@@ -14,14 +12,23 @@ const TABS: Array<{ id: ActiveTab; label: string; href: string }> = [
   { id: "brief", label: "Today's Brief", href: "/" },
 ];
 
-export function WfHeader({ active = "dashboard", dense = false }: WfHeaderProps) {
+function getActive(pathname: string): ActiveTab {
+  if (pathname.startsWith("/themes")) return "themes";
+  if (pathname.startsWith("/portfolio")) return "portfolio";
+  return "dashboard";
+}
+
+export function WfHeader() {
+  const pathname = usePathname();
+  const active = getActive(pathname);
+
   return (
     <div
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: dense ? "10px 20px" : "14px 24px",
+        padding: "14px 24px",
         borderBottom: "1.5px solid var(--line)",
         background: "var(--bg)",
         gap: 16,
