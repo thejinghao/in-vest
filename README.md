@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# in-vest
 
-## Getting Started
+Personal investment thesis tracker. Pulls portfolio data from Schwab, lets you author "themes" (investment theses), and uses Claude to update them on a weekly schedule.
 
-First, run the development server:
+This repo is currently a **scaffold** — the platform pieces are wired up, but Schwab, Claude, and the theme/portfolio UIs are stubs.
+
+## Stack
+
+- **Next.js 16** (App Router) + TypeScript + Tailwind v4
+- **shadcn/ui** for components
+- **Supabase** for the database (Postgres, Auth)
+- **Vercel AI Gateway** for Claude (`anthropic/claude-opus-4-7`)
+- **Schwab API** (stubbed — requires developer.schwab.com approval)
+- Deployed on **Vercel** (Fluid Compute, Node.js 24)
+
+## Getting started
 
 ```bash
+npm install
+cp .env.local.example .env.local   # leave Schwab/Claude vars empty for now
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Routes:
+- `/` — dashboard
+- `/themes` — theme list (placeholder)
+- `/portfolio` — portfolio view (placeholder)
+- `GET /api/health` — sanity check
+- `GET /api/schwab/portfolio` — returns 501 until Schwab is wired up
+- `POST /api/claude/update-themes` — returns 501 until the weekly flow is implemented
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## What's stubbed
 
-## Learn More
+| Module | File | Status |
+|---|---|---|
+| Schwab client | `lib/schwab/client.ts` | Config check + typed shapes; OAuth flow not implemented |
+| Claude client | `lib/ai/gateway.ts` | Connects via Vercel AI Gateway; no prompts written yet |
+| Supabase clients | `lib/supabase/{client,server}.ts` | Wired but no project provisioned |
+| DB schema | `supabase/migrations/0001_init.sql` | Tables defined; no RLS or seed |
+| Weekly cron | `vercel.ts` | Cron entry written but commented out |
 
-To learn more about Next.js, take a look at the following resources:
+## Next steps
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Provision Supabase via Vercel Marketplace (`/marketplace` → Supabase).
+2. Run `supabase db push` to apply the initial migration.
+3. Get Schwab developer credentials and implement the OAuth callback at `app/api/schwab/callback/route.ts`.
+4. Build the theme authoring UI on `/themes`.
+5. Implement the weekly Claude flow in `app/api/claude/update-themes/route.ts` and uncomment the cron in `vercel.ts`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Auth note
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This is a single-user app. There's no sign-in UI yet — adding Supabase Auth is on the to-do list.
