@@ -266,6 +266,8 @@
   }
   table.wf-tbl td.num { text-align: right; }
   table.wf-tbl tr:last-child td { border-bottom: none; }
+  table.wf-tbl tbody tr:hover td { background: var(--paper); }
+  table.wf-tbl tbody tr { transition: background 0.08s; }
 
   /* brand mark */
   .brand {

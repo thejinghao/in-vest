@@ -1,7 +1,34 @@
 import Link from "next/link";
 import { WfHeader } from "@/components/wireframe/WfHeader";
 import { Spark } from "@/components/wireframe/Spark";
-import { THEMES, BRIEF_UPDATES, HOLDINGS, walk, type Verdict } from "@/lib/data/themes";
+import {
+  THEMES,
+  BRIEF_UPDATES,
+  HOLDINGS,
+  COVERAGE_BY_THEME,
+  walk,
+  holdingValue,
+  holdingValueStr,
+  type Verdict,
+} from "@/lib/data/themes";
+
+function fmtMoney(v: number) {
+  return "$" + Math.round(v).toLocaleString("en-US");
+}
+
+function getBriefHeader(): string {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).formatToParts(now);
+  const weekday = parts.find((p) => p.type === "weekday")?.value.toUpperCase() ?? "";
+  const month   = parts.find((p) => p.type === "month")?.value.toUpperCase() ?? "";
+  const day     = parts.find((p) => p.type === "day")?.value ?? "";
+  return `${weekday} ${month} ${day} · 09:14 ET · ${BRIEF_UPDATES.length} THESIS UPDATES`;
+}
 
 function verdictClass(v: Verdict) {
   return v === "bull" ? "badge-bull" : v === "bear" ? "badge-bear" : "badge-flat";
@@ -30,6 +57,16 @@ function ConvictionBar({ n }: { n: number }) {
 
 export default function DashboardPage() {
   const portfolioSpark = walk(3, 60, 0.004, 0.03);
+
+  // Compute portfolio totals from live data
+  const totalValue = HOLDINGS.reduce((s, h) => s + holdingValue(h), 0);
+  const totalCost  = HOLDINGS.reduce((s, h) => s + (h.cash ?? h.shares * h.costBasis), 0);
+  const ytdPct     = ((totalValue - totalCost) / totalCost * 100).toFixed(1);
+  const dayDollars = HOLDINGS.reduce((s, h) => {
+    if (h.cash) return s;
+    return s + h.shares * h.price * (h.chg / 100);
+  }, 0);
+  const dayPct = (dayDollars / totalValue * 100).toFixed(2);
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -68,7 +105,7 @@ export default function DashboardPage() {
                 <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.01em" }}>
                   Today&apos;s Brief
                 </div>
-                <div className="label">THU MAY 8 · 09:14 ET · 4 THESIS UPDATES</div>
+                <div className="label">{getBriefHeader()}</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span className="scribble" style={{ fontSize: 14, color: "var(--muted-ink)" }}>
@@ -99,49 +136,61 @@ export default function DashboardPage() {
               }}
             >
               {BRIEF_UPDATES.map((u, i) => (
-                <div
+                <Link
                   key={i}
-                  style={
-                    u.isLead
-                      ? { borderRight: "1px dashed var(--line-soft)", paddingRight: 14 }
-                      : undefined
-                  }
+                  href={`/themes/${u.themeId}`}
+                  style={{ textDecoration: "none", color: "inherit" }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                    <span className={`badge ${u.badgeClass}`} style={{ fontSize: 9 }}>
-                      {u.badge}
-                    </span>
-                    <span className="label">{u.tag}</span>
-                  </div>
                   <div
-                    style={{
-                      fontSize: u.isLead ? 13.5 : 12,
-                      lineHeight: 1.4,
-                      fontWeight: u.isLead ? 500 : 400,
-                    }}
+                    style={
+                      u.isLead
+                        ? { borderRight: "1px dashed var(--line-soft)", paddingRight: 14, padding: "4px 14px 4px 4px" }
+                        : { padding: 4 }
+                    }
                   >
-                    {u.highlight ? (
-                      <>
-                        <span style={{ background: u.tone === "bull" ? "var(--bull-soft)" : "var(--bear-soft)" }}>
-                          {u.highlight}
-                        </span>
-                        {u.body.replace(u.highlight, "")}
-                      </>
-                    ) : (
-                      u.body
-                    )}
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                      <span className={`badge ${u.badgeClass}`} style={{ fontSize: 9 }}>
+                        {u.badge}
+                      </span>
+                      <span className="label">{u.tag}</span>
+                    </div>
+                    <div
+                      style={{
+                        fontSize: u.isLead ? 13.5 : 12,
+                        lineHeight: 1.4,
+                        fontWeight: u.isLead ? 500 : 400,
+                      }}
+                    >
+                      {u.highlight ? (
+                        <>
+                          <span
+                            style={{
+                              background:
+                                u.tone === "bull" ? "var(--bull-soft)" : "var(--bear-soft)",
+                            }}
+                          >
+                            {u.highlight}
+                          </span>
+                          {u.body.replace(u.highlight, "")}
+                        </>
+                      ) : (
+                        u.body
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 10,
+                        color: "var(--muted-ink)",
+                        marginTop: 4,
+                      }}
+                    >
+                      {u.isLead && u.diffConviction
+                        ? `CONV ${u.diffConviction[0]} → ${u.diffConviction[1]} · ${u.holdings}`
+                        : `holdings: ${u.holdings}`}
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 10,
-                      color: "var(--muted-ink)",
-                      marginTop: 4,
-                    }}
-                  >
-                    {u.isLead ? "2 of your holdings affected · NVDA, AVGO" : `holdings: ${u.holdings}`}
-                  </div>
-                </div>
+                </Link>
               ))}
             </div>
 
@@ -160,7 +209,7 @@ export default function DashboardPage() {
                 style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--muted-ink)" }}
               >
                 NET PORTFOLIO IMPACT FROM BRIEF ·{" "}
-                <span style={{ color: "var(--bull)" }}>+0.4%</span> · 6 of your tickers cited · 2 new
+                <span style={{ color: "var(--bear)" }}>−0.3%</span> · 8 of your tickers cited · 2 new
                 signals to monitor
               </div>
               <div style={{ display: "flex", gap: 6 }}>
@@ -186,7 +235,7 @@ export default function DashboardPage() {
             <div>
               <div style={{ fontSize: 17, fontWeight: 600 }}>Theses · live</div>
               <div className="label" style={{ marginTop: 2 }}>
-                RANKED · DRIFT FROM ENTRY · UPDATED 14:22 ET
+                RANKED · DRIFT FROM ENTRY · UPDATED TODAY
               </div>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
@@ -239,7 +288,7 @@ export default function DashboardPage() {
                   const sparkData = walk(t.seed, 24, drift, 0.035);
                   const trend = t.verdict === "bull" ? "up" : t.verdict === "bear" ? "down" : "flat";
                   return (
-                    <tr key={t.id}>
+                    <tr key={t.id} className="tbl-row-hover">
                       <td style={{ color: "var(--muted-ink)" }}>{String(i + 1).padStart(2, "0")}</td>
                       <td>
                         <Link
@@ -254,6 +303,9 @@ export default function DashboardPage() {
                         >
                           {t.name}
                         </Link>
+                        <span className="label" style={{ marginLeft: 8, fontSize: 9 }}>
+                          {t.cadence === "daily" ? "DAILY" : "WEEKLY"}
+                        </span>
                       </td>
                       <td>
                         <span className={`badge ${verdictClass(t.verdict)}`} style={{ fontSize: 9 }}>
@@ -281,8 +333,8 @@ export default function DashboardPage() {
                         {t.perfYTD}%
                       </td>
                       <td>
-                        <div style={{ display: "flex", gap: 2 }}>
-                          {t.tickers.slice(0, 4).map((tk) => (
+                        <div style={{ display: "flex", gap: 2, alignItems: "center" }}>
+                          {t.tickers.slice(0, 5).map((tk) => (
                             <span
                               key={tk}
                               title={tk}
@@ -290,7 +342,9 @@ export default function DashboardPage() {
                                 display: "inline-block",
                                 width: 6,
                                 height: 6,
-                                background: t.owned.includes(tk) ? "var(--ink)" : "var(--line-faint)",
+                                background: t.owned.includes(tk)
+                                  ? "var(--ink)"
+                                  : "var(--line-faint)",
                                 border: t.owned.includes(tk)
                                   ? "none"
                                   : "1px solid var(--line-soft)",
@@ -312,7 +366,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ── Sidebar: portfolio + holdings ── */}
+        {/* ── Sidebar: portfolio + coverage + holdings ── */}
         <div
           style={{
             padding: "16px 18px",
@@ -323,14 +377,15 @@ export default function DashboardPage() {
         >
           {/* portfolio summary */}
           <div>
-            <div className="label">PORTFOLIO</div>
+            <div className="label">PORTFOLIO · SCHWAB</div>
             <div
               style={{ fontFamily: "var(--font-mono)", fontSize: 20, fontWeight: 700 }}
             >
-              $1,284,612
+              {fmtMoney(totalValue)}
             </div>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--bull)" }}>
-              +0.64% · +14.2% YTD
+              {dayDollars >= 0 ? "+" : ""}
+              {fmtMoney(dayDollars)} ({dayPct}%) TODAY · +{ytdPct}% YTD
             </div>
           </div>
 
@@ -338,20 +393,68 @@ export default function DashboardPage() {
 
           <div className="div-dotted" />
 
-          <div className="label">HOLDINGS · BY THEME COVERAGE</div>
+          {/* coverage by theme */}
+          <div className="label">COVERAGE BY THEME</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            {COVERAGE_BY_THEME.map((c) => (
+              <div
+                key={c.name}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "90px 1fr 36px",
+                  gap: 6,
+                  alignItems: "center",
+                  fontSize: 11,
+                }}
+              >
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 10 }}>{c.name}</span>
+                <div style={{ height: 6, background: "var(--line-faint)", position: "relative" }}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: `${Math.min(c.pct * 2, 100)}%`,
+                      background:
+                        c.tone === "bear"
+                          ? "var(--bear)"
+                          : c.tone === "bull"
+                          ? "var(--bull)"
+                          : "var(--muted-ink)",
+                    }}
+                  />
+                </div>
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 10,
+                    textAlign: "right",
+                    color: "var(--muted-ink)",
+                  }}
+                >
+                  {c.pct}%
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="div-dotted" />
+
+          <div className="label">HOLDINGS · TAGGED</div>
 
           {/* holdings list */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
             {HOLDINGS.map((h) => (
               <div
                 key={h.ticker}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "52px 1fr 60px 38px",
+                  gridTemplateColumns: "52px 1fr 60px",
                   fontFamily: "var(--font-mono)",
                   fontSize: 11,
                   gap: 6,
-                  padding: "3px 0",
+                  padding: "4px 0",
                   borderBottom: "1px dotted var(--line-faint)",
                 }}
               >
@@ -359,20 +462,7 @@ export default function DashboardPage() {
                 <span style={{ fontSize: 9.5, color: "var(--muted-ink)" }}>
                   {h.themes.join(" · ")}
                 </span>
-                <span style={{ textAlign: "right" }}>{h.val}</span>
-                <span
-                  style={{
-                    textAlign: "right",
-                    color:
-                      h.chg > 0
-                        ? "var(--bull)"
-                        : h.chg < 0
-                        ? "var(--bear)"
-                        : "var(--muted-ink)",
-                  }}
-                >
-                  {h.chg === 0 ? "—" : (h.chg > 0 ? "+" : "") + h.chg + "%"}
-                </span>
+                <span style={{ textAlign: "right" }}>{holdingValueStr(h)}</span>
               </div>
             ))}
           </div>
