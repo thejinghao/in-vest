@@ -1,16 +1,36 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 type ActiveTab = "dashboard" | "themes" | "portfolio" | "brief";
 
 const TABS: Array<{ id: ActiveTab; label: string; href: string }> = [
-  { id: "dashboard", label: "Dashboard", href: "/" },
-  { id: "themes", label: "Themes", href: "/themes" },
-  { id: "portfolio", label: "Portfolio", href: "/portfolio" },
-  { id: "brief", label: "Today's Brief", href: "/" },
+  { id: "dashboard",  label: "Dashboard",     href: "/" },
+  { id: "themes",     label: "Themes",         href: "/themes" },
+  { id: "portfolio",  label: "Portfolio",      href: "/portfolio" },
+  { id: "brief",      label: "Today's Brief",  href: "/" },
 ];
+
+function formatET(): string {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(now);
+
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  const month = get("month").toUpperCase();
+  const day   = get("day");
+  const hour  = get("hour");
+  const min   = get("minute");
+  return `${month} ${day} · ${hour}:${min} ET`;
+}
 
 function getActive(pathname: string): ActiveTab {
   if (pathname.startsWith("/themes")) return "themes";
@@ -21,6 +41,13 @@ function getActive(pathname: string): ActiveTab {
 export function WfHeader() {
   const pathname = usePathname();
   const active = getActive(pathname);
+  const [timeStr, setTimeStr] = useState<string>("");
+
+  useEffect(() => {
+    setTimeStr(formatET());
+    const id = setInterval(() => setTimeStr(formatET()), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div
@@ -49,7 +76,10 @@ export function WfHeader() {
                 style={{
                   fontSize: 11,
                   color: t.id === active ? "var(--ink)" : "var(--muted-ink)",
-                  borderBottom: t.id === active ? "1.5px solid var(--ink)" : "1.5px solid transparent",
+                  borderBottom:
+                    t.id === active
+                      ? "1.5px solid var(--ink)"
+                      : "1.5px solid transparent",
                   paddingBottom: 4,
                 }}
               >
@@ -60,7 +90,7 @@ export function WfHeader() {
         </div>
       </div>
 
-      {/* right: schwab status + avatar */}
+      {/* right: schwab status + live clock + avatar */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div className="label" style={{ fontSize: 10 }}>SCHWAB · LIVE</div>
         <div
@@ -76,9 +106,10 @@ export function WfHeader() {
             fontFamily: "var(--font-mono)",
             fontSize: 11,
             color: "var(--muted-ink)",
+            minWidth: 120,
           }}
         >
-          MAY 8 · 14:22 ET
+          {timeStr}
         </div>
         <div
           className="box"
