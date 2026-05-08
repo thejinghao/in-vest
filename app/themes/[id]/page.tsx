@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { WfHeader } from "@/components/wireframe/WfHeader";
 import { Spark } from "@/components/wireframe/Spark";
 import { SentimentRibbon } from "@/components/wireframe/SentimentRibbon";
 import { VerdictMeter } from "@/components/wireframe/VerdictMeter";
@@ -54,25 +53,7 @@ export default async function ThemeDetailPage({
   const revisionsAsc = [...detail.revisions].reverse();
 
   return (
-    <div
-      style={{
-        background: "var(--bg)",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <WfHeader active="themes" />
-
-      <div
-        style={{
-          padding: "14px 22px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-          flex: 1,
-        }}
-      >
+    <div style={{ padding: "18px 24px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
         {/* breadcrumb + action buttons */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div className="label">
@@ -546,6 +527,5 @@ export default async function ThemeDetailPage({
           </div>
         </div>
       </div>
-    </div>
   );
 }

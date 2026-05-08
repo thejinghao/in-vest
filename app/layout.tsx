@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Caveat } from "next/font/google";
+import { WfHeader } from "@/components/wireframe/WfHeader";
 import "./globals.css";
 
 const inter = Inter({
@@ -34,7 +35,8 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${jetbrainsMono.variable} ${caveat.variable}`}
     >
-      <body style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <body style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
+        <WfHeader />
         {children}
       </body>
     </html>
