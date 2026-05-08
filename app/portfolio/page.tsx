@@ -1,33 +1,18 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { WfHeader } from "@/components/wireframe/WfHeader";
 
 export default function PortfolioPage() {
   return (
-    <div className="space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-3xl font-semibold tracking-tight">Portfolio</h1>
-        <p className="text-muted-foreground">
-          Positions pulled from your Schwab account.
-        </p>
-      </header>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Schwab not connected</CardTitle>
-          <CardDescription>
-            OAuth flow ships in the next iteration.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          Once connected, this view will show holdings, market value, and
-          cost-basis for each position, snapshotted to Supabase.
-        </CardContent>
-      </Card>
+    <div style={{ background: "var(--bg)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <WfHeader active="portfolio" />
+      <div style={{ padding: "18px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+        <div>
+          <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: "-0.01em" }}>Portfolio</div>
+          <div className="label" style={{ marginTop: 4 }}>LIVE SCHWAB DATA · NOT YET CONNECTED</div>
+        </div>
+        <div className="box-dashed slab" style={{ height: 200 }}>
+          SCHWAB OAUTH NOT YET CONFIGURED
+        </div>
+      </div>
     </div>
   );
 }
