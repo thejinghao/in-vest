@@ -1,5 +1,4 @@
 // Create A — Chat + Live Thesis Preview (static wireframe, no live chat yet)
-import { WfHeader } from "@/components/wireframe/WfHeader";
 import { Bubble } from "@/components/wireframe/Bubble";
 
 const SUGGESTED_REPLIES = [
@@ -21,10 +20,7 @@ const UNIVERSE: Array<{ ticker: string; owned: boolean; isNew?: boolean }> = [
 
 export default function NewThemePage() {
   return (
-    <div style={{ background: "var(--bg)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <WfHeader active="themes" />
-
-      <div style={{ padding: "18px 24px", display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
+    <div style={{ padding: "18px 24px", display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
         {/* page header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
           <div>
@@ -371,6 +367,5 @@ export default function NewThemePage() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
